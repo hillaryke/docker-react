@@ -6,7 +6,7 @@
 .pnp.js
 
 # ide
-/.idea
+.idea/
 
 # testing
 /coverage
