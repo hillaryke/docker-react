@@ -4,3 +4,6 @@ services:
 
 before_install:
   - docker build -t hilare/docker-react -f Dockerfile.dev .
+
+script:
+  - docker run hilare/docker-react npm run test -- --coverage
