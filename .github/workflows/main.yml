@@ -44,7 +44,7 @@ jobs:
 
       # create a zipped package excluding node_modules, to send Dockerrun.aws.json to beanstalk
       - name: Generete Deployment Package
-        run: zip -r deploy.zip * -x "**node_modules"
+        run: zip -r deploy-v1.zip * -x "**node_modules"
 
       # use the action to push zip to beanstalk
       - name: Deploy to EB
@@ -56,3 +56,4 @@ jobs:
           environment_name: Dockerreact-env
           version_label: "docker-app-${{ steps.format-time.outputs.replaced }}"
           region: us-east-1
+          deployment_package: deploy-v1.zip
