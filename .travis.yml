@@ -7,3 +7,10 @@ before_install:
 
 script:
   - docker run hilare/docker-react npm run test -- --coverage
+
+deploy:
+  provider: elasticbeanstalk
+  region: "us-east-1"
+  app: "docker-react"
+  env: "Dockerreact-env"
+  bucket_name:
