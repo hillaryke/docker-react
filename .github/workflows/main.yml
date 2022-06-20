@@ -26,3 +26,34 @@ jobs:
           file: Dockerfile
           push: true
           tags: hilare/docker-react:latest
+
+      # Get current timestamp for tracking version of beanstalk
+      - name: Get Timestamp
+        uses: gerred/actions/current-time@master
+        id: current-time
+
+      # use action to replace ':' with '-' in the timestamp string (optional)
+      - name: Run String Replace
+        uses: frabert/replace-string-action@master
+        id: format-time
+        with:
+          pattern: '[:\.]+'
+          string: "${{ steps.current-time.outputs-time }}"
+          replace-with: '-'
+          flags: 'g'
+
+      # create a zipped package excluding node_modules, to send Dockerrun.aws.json to beanstalk
+      - name: Generete Deployment Package
+        run: zip -r deploy.zip * -x "**node_modules"
+
+      # use the action to push zip to beanstalk
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v16
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: docker-react
+          environment_name: Dockerreact-env
+          version_label: "docker-app-${{ steps.format-time.outputs.replaced }}"
+          region: us-east-1
+          deployment_package: deploy.zip
