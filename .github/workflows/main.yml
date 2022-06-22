@@ -13,7 +13,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Logi n to DockerHub
+      - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -27,34 +27,25 @@ jobs:
           push: true
           tags: hilare/docker-react:latest
 
-      # Get current timestamp for tracking version of beanstalk
-      - name: Get Timestamp
-        uses: gerred/actions/current-time@master
-        id: current-time
-
-      # use action to replace ':' with '-' in the timestamp string (optional)
-      - name: Run String Replace
-        uses: frabert/replace-string-action@master
-        id: format-time
+      #  generating sequential build numbers
+      - name: Build Number Generator
+        id: buildnumber
+        uses: einaregilsson/build-number@v3
         with:
-          pattern: '[:\.]+'
-          string: "${{ steps.current-time.outputs-time }}"
-          replace-with: '-'
-          flags: 'g'
+          token: ${{ secrets.github_token }}
 
       # create a zipped package excluding node_modules, to send Dockerrun.aws.json to beanstalk
       - name: Generete Deployment Package
-        run: zip -r deploy-v1.zip * -x "**node_modules"
+        run: zip -r deploy.zip * -x '*node_modules*' '*.git*'
 
       # use the action to push zip to beanstalk
       - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v16
+        uses: einaregilsson/beanstalk-deploy@v20
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: docker-react
           environment_name: Dockerreact-env
-          version_label: "docker-app-${{ steps.format-time.outputs.replaced }}"
+          version_label: docker-react-${{ steps.buildnumber.outputs.build_number }}
           region: us-east-1
-          deployment_package: deploy-v1.zip
-          use_existing_version_if_available: true
+          deployment_package: deploy.zip
