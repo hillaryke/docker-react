@@ -11,10 +11,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build the image
-        run: docker build -t hilare/docker-react -f Dockerfile.dev .
+        run: docker build -t hilare/docker-react-image -f Dockerfile.dev .
 
       - name: Test react app
-        run: docker run -e CI=true hilare/docker-react npm test
+        run: docker run -e CI=true hilare/docker-react-image npm test
 
       #  generating sequential build numbers
       - name: Build Number Generator
@@ -25,7 +25,7 @@ jobs:
 
       # create a zipped package excluding node_modules, to send mydockerrunawsfile.json to beanstalk
       - name: Generate Deployment Package
-        run: zip -r deploy.zip * -x '*node_modules*' '*.git*'
+        run: zip -r deploy-${{ steps.buildnumber.outputs.build_number }}.zip * -x '*node_modules*' '*.git*'
 
       # use the action to push zip to beanstalk
       - name: Deploy to EB
@@ -37,4 +37,4 @@ jobs:
           environment_name: Dockerreact-env
           version_label: docker-react-${{ steps.buildnumber.outputs.build_number }}
           region: us-east-1
-          deployment_package: deploy.zip
+          deployment_package: deploy-${{ steps.buildnumber.outputs.build_number }}.zip
