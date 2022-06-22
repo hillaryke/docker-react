@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build the image
-        run: docker build -t hilare/docker-react -f ./client/Dockerfile.dev ./client
+        run: docker build -t hilare/docker-react -f Dockerfile.dev .
 
       - name: Test react app
         run: docker run -e CI=true hilare/docker-react npm test
